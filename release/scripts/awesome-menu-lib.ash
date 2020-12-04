@@ -7,6 +7,9 @@ script "awesome-menu-lib";
 notify "philmasterplus";
 since 20.7;
 
+
+//-------- Utility functions for internal use --------//
+
 /**
  * Attempt to unescape the raw content of a HTML attribute.
  * @param text String from HTML attribute
@@ -71,8 +74,6 @@ record AwesomeMenu {
    */
   AwesomeMenuRow [int] rows;
 };
-
-
 
 /**
  * Return a string representing the Awesome Menu icon.
@@ -433,31 +434,61 @@ AwesomeMenu load_awesome_menu_preset_from_file(string file, string name) {
   return presets[name];
 }
 
+//-------- Utility functions for main() --------//
+
+/**
+ * Splits a string containing tokens separated by whitespace.
+ * More resilient than using `string_split(to_split, " ")`
+ * @param to_split String to split
+ * @return List of tokens
+ */
+string [int] _split_whitespace(string to_split) {
+  string [int] result;
+  matcher token_matcher = create_matcher("(\\S+)\\s*", to_split);
+  while (token_matcher.find()) {
+    result[result.count()] = token_matcher.group(1);
+  }
+  return result;
+}
+
+/**
+ * Aborts the program if `args` does not contain exactly `arg_count` + 1 items.
+ * @param args List of strings
+ * @param arg_count Expected number of arguments
+ */
+void _expect_arg_count(string [int] args, int arg_count) {
+  int actual_count = args.count() - 1;
+  if (actual_count < arg_count) {
+    abort(`Not enough arguments for command "{args[0]}" (expected {arg_count}, got {actual_count})`);
+  } else if (actual_count > arg_count) {
+    abort(`Too many arguments for command "{args[0]}" (expected {arg_count}, got {actual_count})`);
+  }
+}
+
 /**
  * Entrypoint for the gCLI interface.
  * @param commands Commands
  */
 void main(string commands) {
+  string [int] args = _split_whitespace(commands);
+
+  // Default command is help
+  string cmd = args.count() == 0 ? "?" : args[0];
+
   // Print help and exit
-  if (commands == "" || commands == "?" || commands == "help") {
+  if (cmd == "?" || cmd == "help") {
     print_html("Usage: <b>awesome-menu-lib</b> help | ? | save <i>preset</i> | apply <i>preset</i>");
     return;
-  }
+  } else if (cmd == "save") {
+    _expect_arg_count(args, 1);
+    string preset_name = args[1];
 
-  matcher cmd_pattern = create_matcher("^(\\w+)\\s+([\\s\\S]*)$", commands);
-  if (!cmd_pattern.find()) {
-    abort("Cannot understand command: " + commands + "<br>Use <kbd>awesome-menu-lib help</kbd> to check usage");
-  }
-
-  string cmd = cmd_pattern.group(1);
-  string args = cmd_pattern.group(2);
-
-  if (cmd == "save") {
-    string preset_name = args;
     save_awesome_menu_to_preset_file(PRESET_FILE, preset_name);
     print_html(`Saved current Awesome Menu configuration to <code>{PRESET_FILE}</code> under <code>"{preset_name}"</code>`);
   } else if (cmd == "apply") {
-    string preset_name = args;
+    _expect_arg_count(args, 1);
+    string preset_name = args[1];
+
     AwesomeMenu config = load_awesome_menu_preset_from_file(PRESET_FILE, preset_name);
     if (!user_confirm(`WARNING: This will overwrite your Awesome Menu configuration with the preset "{preset_name}". Before you continue, save your current preset with the command:\n\n> awesome-menu-lib save <preset_name>\n\nDo you want to continue?`)) {
       abort(`You choose not to change your Awesome Menu.`);
@@ -466,6 +497,6 @@ void main(string commands) {
     apply_awesome_menu(config);
     print("Done! Enjoy your new Awesome Menu.");
   } else {
-    abort("Unknown command: " + cmd);
+    abort(`Unknown command: {cmd}<br>Use <kbd>awesome-menu-lib help</kbd> to check usage`);
   }
 }
