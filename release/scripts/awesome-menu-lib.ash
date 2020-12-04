@@ -13,7 +13,8 @@ since 20.7;
  * @return Unescaped string
  */
 string _unescape_attr(string text) {
-  return entity_decode(text).replace_string("\\/", "/");
+  // Unescape entities twice because KoL escapes them twice in the raw HTML
+  return entity_decode(entity_decode(text)).replace_string("\\/", "/");
 }
 
 //-------- Low-level methods --------//
