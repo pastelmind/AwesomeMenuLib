@@ -370,11 +370,11 @@ Point next_created_pos(AwesomeMenu awesome_menu) {
  * WARNING: This will destroy your current Awesome Menu!
  * @param config Awesome Menu configuration to apply
  */
-void setup_awesome_menu(AwesomeMenu config) {
+void apply_awesome_menu(AwesomeMenu config) {
   // Reset the current menu to avoid complications with out-of-order configs
+  print("Resetting Awesome Menu...");
   AwesomeMenu current = reset_awesome_menu();
 
-  // Delete all icons in the post-reset config
   while (current.rows[0].icons.count() > 0) {
     foreach x, icon in current.rows[0].icons {
       current = delete_icon(x, current.rows[0].y);
@@ -382,6 +382,7 @@ void setup_awesome_menu(AwesomeMenu config) {
   }
 
   foreach row_index, row in config.rows {
+    print(`Setting up row {row_index}...`);
     if (row.icons.count() == 0) {
       // If this row is empty...
       // The easiest way of creating an empty row is to swap an empty cell with
@@ -462,7 +463,7 @@ void main(string commands) {
       abort(`You choose not to change your Awesome Menu.`);
     }
     print(`Applying Awesome Menu configuration "{preset_name}"...`);
-    setup_awesome_menu(config);
+    apply_awesome_menu(config);
     print("Done! Enjoy your new Awesome Menu.");
   } else {
     abort("Unknown command: " + cmd);
