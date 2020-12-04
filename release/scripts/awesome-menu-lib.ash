@@ -401,40 +401,31 @@ void apply_awesome_menu(AwesomeMenu config) {
 
 string PRESET_FILE = "awesome-menu-presets.txt";
 
+//-------- Utility functions for main() --------//
+
 /**
- * Saves the current user's Awesome Menu configuration in `preset_file`,
- * under the key `name`.
- * @param file Text file to store the configuration
- * @param name Name of the preset
+ * Saves Awesome Menu presets to a text file.
+ * @param file Text file to write to
+ * @param presets Awesome Menu preset data
  */
-void save_awesome_menu_to_preset_file(string file, string name) {
-  AwesomeMenu [string] presets;
-  if (!file_to_map(file, presets)) {
-    abort(`Cannot load Awesome Menu preset file: {file}`);
-  }
-  presets[name] = get_awesome_menu();
+void save_awesome_menu_presets_to_file(string file, AwesomeMenu [string] presets) {
   if (!map_to_file(presets, file)) {
     abort(`Cannot save Awesome Menu preset file: {file}`);
   }
 }
 
 /**
- * Loads an Awesome Menu configuration from a preset file.
- * @param file Text file to load the configuration from
- * @param name Name of the preset
+ * Loads Awesome Menu presets from a text file.
+ * @param file Text file to read from
+ * @return Map of preset names to Awesome Menu presets
  */
-AwesomeMenu load_awesome_menu_preset_from_file(string file, string name) {
+AwesomeMenu [string] load_awesome_menu_presets_from_file(string file) {
   AwesomeMenu [string] presets;
   if (!file_to_map(file, presets)) {
     abort(`Cannot load Awesome Menu preset file: {file}`);
   }
-  if (!(presets contains name)) {
-    abort(`Cannot find Awesome Menu preset named "{name}" in {file}`);
-  }
-  return presets[name];
+  return presets;
 }
-
-//-------- Utility functions for main() --------//
 
 /**
  * Splits a string containing tokens separated by whitespace.
@@ -483,13 +474,24 @@ void main(string commands) {
     _expect_arg_count(args, 1);
     string preset_name = args[1];
 
-    save_awesome_menu_to_preset_file(PRESET_FILE, preset_name);
+    AwesomeMenu [string] presets = load_awesome_menu_presets_from_file(PRESET_FILE);
+    if (presets contains preset_name && !user_confirm(`{PRESET_FILE} already contains a preset named "{preset_name}".\nOverwrite?`)) {
+      abort(`You choose not to overwrite the Awesome Menu preset named "{preset_name}".`);
+    }
+    presets[preset_name] = get_awesome_menu();
+
+    save_awesome_menu_presets_to_file(PRESET_FILE, presets);
     print_html(`Saved current Awesome Menu configuration to <code>{PRESET_FILE}</code> under <code>"{preset_name}"</code>`);
   } else if (cmd == "apply") {
     _expect_arg_count(args, 1);
     string preset_name = args[1];
 
-    AwesomeMenu config = load_awesome_menu_preset_from_file(PRESET_FILE, preset_name);
+    AwesomeMenu [string] presets = load_awesome_menu_presets_from_file(PRESET_FILE);
+    if (!(presets contains preset_name)) {
+      abort(`Cannot find Awesome Menu preset named "{preset_name}" in {PRESET_FILE}`);
+    }
+    AwesomeMenu config = presets[preset_name];
+
     if (!user_confirm(`WARNING: This will overwrite your Awesome Menu configuration with the preset "{preset_name}". Before you continue, save your current preset with the command:\n\n> awesome-menu-lib save <preset_name>\n\nDo you want to continue?`)) {
       abort(`You choose not to change your Awesome Menu.`);
     }
