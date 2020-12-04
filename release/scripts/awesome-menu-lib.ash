@@ -457,6 +457,16 @@ void _expect_arg_count(string [int] args, int arg_count) {
 }
 
 /**
+ * Returns the singular or plural form, depending on `num`.
+ * @param num Value to check for plurality
+ * @param singular Singular form
+ * @param plural Plural form
+ */
+string _plural(int num, string singular, string plural) {
+  return `{num} {num == 0 || num == 1 ? singular : plural}`;
+}
+
+/**
  * Entrypoint for the gCLI interface.
  * @param commands Commands
  */
@@ -468,8 +478,20 @@ void main(string commands) {
 
   // Print help and exit
   if (cmd == "?" || cmd == "help") {
-    print_html("Usage: <b>awesome-menu-lib</b> help | ? | save <i>preset</i> | apply <i>preset</i>");
+    print_html("Usage: <b>awesome-menu-lib</b> help | ? | list | save <i>preset</i> | apply <i>preset</i>");
     return;
+  } else if (cmd == "list") {
+    _expect_arg_count(args, 0);
+
+    AwesomeMenu [string] presets = load_awesome_menu_presets_from_file(PRESET_FILE);
+    foreach preset_name, config in presets {
+      int row_count = config.rows.count();
+      int icon_count = 0;
+      foreach _, row in config.rows {
+        icon_count += row.icons.count();
+      }
+      print_html(`<b>{preset_name}</b>: {_plural(row_count, "row", "rows")}, {_plural(icon_count, "icon", "icons")}`);
+    }
   } else if (cmd == "save") {
     _expect_arg_count(args, 1);
     string preset_name = args[1];
