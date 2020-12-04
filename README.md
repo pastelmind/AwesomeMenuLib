@@ -8,6 +8,8 @@ It also provides gCLI commands for saving and restoring your Top Menu Bar preset
 
 Note: The iconic top menu bar in Kingdom of Loathing is driven by `awesomemenu.php`, which is where this library took its name.
 
+([kolmafia.us thread](https://kolmafia.us/threads/awesome-menu-lib-save-and-load-your-top-menu-bar-icons.25694/))
+
 ## Installation
 
 Enter the following into KoLmafia's gCLI:
