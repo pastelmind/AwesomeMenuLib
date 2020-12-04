@@ -18,13 +18,33 @@ svn checkout https://github.com/pastelmind/awesome-menu-lib/trunk/release
 
 ## Usage
 
-To save your current top menu bar configuration, enter the following into KoLmafia's gCLI:
+### help
+
+To see a list of available commands, enter the following into KoLmafia's gCLI:
+
+```
+awesome-menu-lib help
+```
+
+### save
+
+To save your current top menu bar configuration:
 
 ```
 awesome-menu-lib save <config_name>
 ```
 
 Where `<config_name>` is any name of your choice.
+
+### list
+
+To list your saved configurations:
+
+```
+awesome-menu-lib list
+```
+
+### apply
 
 To apply a saved configuration to your current top menu bar, type in:
 
@@ -35,3 +55,13 @@ awesome-menu-lib apply <config_name>
 All configurations are currently saved to `data/awesome-menu-presets.txt`. These presets are shared between your characters.
 
 **WARNING: This command will destroy your current top menu bar settings. Save your top menu bar before running this command.**
+
+### delete
+
+To delete a saved configuration, type in:
+
+```
+awesome-menu-lib delete <config_name>
+```
+
+(This won't affect your current top menu bar.)
