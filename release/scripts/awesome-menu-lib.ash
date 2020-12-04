@@ -478,7 +478,7 @@ void main(string commands) {
 
   // Print help and exit
   if (cmd == "?" || cmd == "help") {
-    print_html("Usage: <b>awesome-menu-lib</b> help | ? | list | save <i>preset</i> | apply <i>preset</i>");
+    print_html("Usage: <b>awesome-menu-lib</b> help | ? | list | save <i>preset</i> | apply <i>preset</i> | delete <i>preset</i>");
     return;
   } else if (cmd == "list") {
     _expect_arg_count(args, 0);
@@ -520,6 +520,18 @@ void main(string commands) {
     print(`Applying Awesome Menu configuration "{preset_name}"...`);
     apply_awesome_menu(config);
     print("Done! Enjoy your new Awesome Menu.");
+  } else if (cmd == "delete") {
+    _expect_arg_count(args, 1);
+    string preset_name = args[1];
+
+    AwesomeMenu [string] presets = load_awesome_menu_presets_from_file(PRESET_FILE);
+    if (!(presets contains preset_name)) {
+      abort(`Cannot find Awesome Menu preset named "{preset_name}" in {PRESET_FILE}`);
+    }
+
+    remove presets[preset_name];
+    save_awesome_menu_presets_to_file(PRESET_FILE, presets);
+    print_html(`Deleted Awesome Menu preset <code>"{preset_name}"</code> from <code>{PRESET_FILE}</code>`);
   } else {
     abort(`Unknown command: {cmd}<br>Use <kbd>awesome-menu-lib help</kbd> to check usage`);
   }
